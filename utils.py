@@ -47,6 +47,10 @@ def pad_image(volume):
     volume = np.pad(volume, padding, mode="constant", constant_values=0)
     return volume
 
+def unpad_image(volume, padding):
+    return volume[padding[0][0]:volume.shape[0]-padding[0][1],
+                  padding[1][0]:volume.shape[1]-padding[1][1]]
+
 def pad_sample(x):
     volume, mask = x
     return pad_image(volume), pad_image(mask)
