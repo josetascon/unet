@@ -34,18 +34,43 @@ def crop_sample(x):
     return ( volume[z_min:z_max, y_min:y_max, x_min:x_max],
              mask[z_min:z_max, y_min:y_max, x_min:x_max] )
 
+# def pad_image(volume):
+#     a = volume.shape[0]
+#     b = volume.shape[1]
+#     if a == b:
+#         return volume
+#     diff = (max(a, b) - min(a, b)) / 2.0
+#     if a > b:
+#         padding = ((0, 0), (int(np.floor(diff)), int(np.ceil(diff))))
+#     else:
+#         padding = ((int(np.floor(diff)), int(np.ceil(diff))), (0, 0))
+#     volume = np.pad(volume, padding, mode="constant", constant_values=0)
+#     return volume
+
 def pad_image(volume):
     a = volume.shape[0]
     b = volume.shape[1]
-    if a == b:
+    level = 16
+    
+    if a%level == 0 and b%level == 0:
         return volume
-    diff = (max(a, b) - min(a, b)) / 2.0
-    if a > b:
-        padding = ((0, 0), (int(np.floor(diff)), int(np.ceil(diff))))
+    
+    if a%level != 0:
+        diff = (level - a%level) / 2.0
+        w = (int(np.floor(diff)), int(np.ceil(diff)))
     else:
-        padding = ((int(np.floor(diff)), int(np.ceil(diff))), (0, 0))
+        w = (0,0)
+    
+    if b%level != 0:
+        diff = (level - b%level) / 2.0
+        h = (int(np.floor(diff)), int(np.ceil(diff)))
+    else:
+        h = (0,0)
+
+    padding = (w,h)
     volume = np.pad(volume, padding, mode="constant", constant_values=0)
     return volume
+
 
 def unpad_image(volume, padding):
     return volume[padding[0][0]:volume.shape[0]-padding[0][1],
@@ -95,10 +120,24 @@ def normalize_volume(volume):
     p10 = np.percentile(volume, 10)
     p99 = np.percentile(volume, 99)
     volume = rescale_intensity(volume, in_range=(p10, p99))
-    m = np.mean(volume, axis=(0, 1, 2))
-    s = np.std(volume, axis=(0, 1, 2))
+    m = np.mean(volume)
+    s = np.std(volume)
     volume = (volume - m) / s
     return volume
+
+def gaussian_noise(image, percent, mean=0.0):
+    # only apply after normalization
+    # how to: https://stackoverflow.com/questions/31834803/how-to-add-5-percent-gaussian-noise-to-image
+
+    # stats
+    sigma = np.std(image)
+    new_sigma = sigma * percent
+    # print(sigma)
+    # print(new_sigma)
+
+    # gaussian noise
+    noise = np.random.normal(mean, new_sigma, image.shape)
+    return image + noise.astype(image.dtype)
 
 def log_images(x, y_true, y_pred, channel=1):
     images = []

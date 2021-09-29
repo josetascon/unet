@@ -35,6 +35,7 @@ def main():
         unet.eval()
         unet.to(device)
 
+        y0 = []
         for i, data in enumerate(loader):
             x = data
             x = x.to(device)
@@ -46,7 +47,10 @@ def main():
             y_pred_np = unpad_image(y_pred_np, dataset.padding)
             # print(y_pred_np.shape)
 
-            file_output = args.output + '_{:04d}.{}'.format(i,args.format)
+            y_pred_np[y_pred_np < 0.5] = 0.0
+            y_pred_np[y_pred_np > 0.5] = 1.0
+
+            file_output = args.output + '{:04d}.{}'.format(i,args.format)
             image_ref = dataset.reference_image()
             image_out = sitk.GetImageFromArray(y_pred_np)
             image_out.CopyInformation(image_ref)
