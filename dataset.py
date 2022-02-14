@@ -116,7 +116,7 @@ class SimpleDataset(Dataset):
         level = 16
     
         if a%level == 0 and b%level == 0:
-            return volume
+            return ((0,0),(0,0))
         
         if a%level != 0:
             diff = (level - a%level) / 2.0

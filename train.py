@@ -48,7 +48,7 @@ def main():
         trfm = None
         noise = False
     train_set = SubsetDataset(train_subset, trfm, noise = noise)
-    val_set = SubsetDataset(val_subset, noise = noise)
+    val_set = SubsetDataset(val_subset, trfm, noise = noise)
 
     if len(dataset) == 1: val_set = SubsetDataset(train_subset, trfm, noise = noise)
 
